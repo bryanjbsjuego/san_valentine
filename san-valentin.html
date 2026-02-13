@@ -163,6 +163,27 @@
         </div>
     </div>
     
+    <!-- No Modal (cuando intenta decir no) -->
+    <div id="no-modal" class="fixed inset-0 flex items-center justify-center z-[60] hidden">
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+        <div class="glass rounded-3xl shadow-2xl p-8 md:p-12 text-center max-w-lg mx-4 transform scale-0 transition-transform duration-500 relative z-10" id="no-modal-content">
+            <h2 class="title-font text-4xl md:text-5xl font-black text-pink-600 mb-6">
+                ¡Espera! 😱
+            </h2>
+            <p class="text-xl text-gray-700 mb-6 leading-relaxed">
+                ¡No puedes decir que no! 💔<br>
+                Esta es una pregunta con una sola respuesta posible...
+            </p>
+            <div class="text-6xl mb-6 pulse">🥺</div>
+            <p class="text-lg text-pink-600 font-bold mb-6">
+                Por favor, presiona el botón de "Sí" 💕
+            </p>
+            <button id="close-no-modal" class="bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                Está bien, presionaré "Sí" 💖
+            </button>
+        </div>
+    </div>
+    
     <!-- Music Control -->
     <button id="music-control" class="fixed bottom-6 right-6 glass rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-2xl md:text-3xl shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 z-50">
         🎵
@@ -209,7 +230,7 @@
                         musicPlaying = false;
                         document.getElementById('music-control').textContent = '🔇';
                     });
-            }, 3000);
+            }, 200);
         });
         
         // Click anywhere to start music (fallback para navegadores que bloquean autoplay)
@@ -391,65 +412,45 @@
             }
         });
         
-        // Decline proposal (button runs away)
+        // Decline proposal (show modal instead)
         const btnNo = document.getElementById('btn-no');
-        const messages = [
-            '¿Segura? 🥺',
-            '¿De verdad? 💔',
-            'Piénsalo mejor 💕',
-            '¡Por favor! 🙏',
-            '¡Una oportunidad! ❤️',
-            'Solo di que sí 🥹'
-        ];
-        
-        let clickCount = 0;
         
         btnNo.addEventListener('click', function(e) {
             e.preventDefault();
-            clickCount++;
             
-            // Get button dimensions
-            const btnWidth = btnNo.offsetWidth;
-            const btnHeight = btnNo.offsetHeight;
+            // Show No modal
+            document.getElementById('no-modal').classList.remove('hidden');
             
-            // Calculate safe area
-            const maxX = window.innerWidth - btnWidth - 30;
-            const maxY = window.innerHeight - btnHeight - 30;
-            const minX = 30;
-            const minY = 30;
-            
-            // Random position
-            const randomX = Math.random() * (maxX - minX) + minX;
-            const randomY = Math.random() * (maxY - minY) + minY;
-            
-            // Move button
-            btnNo.style.position = 'fixed';
-            btnNo.style.left = randomX + 'px';
-            btnNo.style.top = randomY + 'px';
-            btnNo.style.zIndex = '1000';
-            
-            // Change text
-            btnNo.textContent = messages[clickCount % messages.length];
-            
-            // Animate with anime.js
+            // Animate modal entrance
             anime({
-                targets: btnNo,
-                scale: [0.8, 1],
+                targets: '#no-modal-content',
+                scale: [0, 1],
                 rotate: [0, 360],
-                duration: 500,
+                duration: 600,
                 easing: 'easeOutElastic(1, .5)'
             });
+        });
+        
+        // Close No modal
+        document.getElementById('close-no-modal').addEventListener('click', function() {
+            // Animate modal exit
+            anime({
+                targets: '#no-modal-content',
+                scale: [1, 0],
+                duration: 400,
+                easing: 'easeInExpo',
+                complete: function() {
+                    document.getElementById('no-modal').classList.add('hidden');
+                }
+            });
             
-            // Make Yes button bigger after 3 attempts
-            if (clickCount >= 3) {
-                const btnYes = document.getElementById('btn-yes');
-                anime({
-                    targets: btnYes,
-                    scale: [1, 1.2, 1],
-                    duration: 500,
-                    easing: 'easeOutElastic(1, .5)'
-                });
-            }
+            // Make Yes button pulse to draw attention
+            anime({
+                targets: '#btn-yes',
+                scale: [1, 1.15, 1, 1.15, 1],
+                duration: 1000,
+                easing: 'easeInOutQuad'
+            });
         });
         
         // Music control
