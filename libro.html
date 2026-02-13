@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Nuestro Libro de Amor 💕</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Turn.js for page flip effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+    
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Crimson Text', serif;
+            overflow-x: hidden;
+        }
+        
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .script-font {
+            font-family: 'Dancing Script', cursive;
+        }
+        
+        /* Gradiente de fondo */
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .animated-bg {
+            background: linear-gradient(-45deg, #ffc0cb, #ffb6c1, #ff69b4, #ff1493, #ffc0cb);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        /* Book styles */
+        .book-container {
+            perspective: 2000px;
+        }
+        
+        #flipbook {
+            width: 800px;
+            height: 600px;
+            margin: 0 auto;
+        }
+        
+        #flipbook .page {
+            width: 400px;
+            height: 600px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        #flipbook .page-content {
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            #flipbook {
+                width: 600px;
+                height: 450px;
+            }
+            
+            #flipbook .page {
+                width: 300px;
+                height: 450px;
+            }
+            
+            #flipbook .page-content {
+                padding: 30px;
+            }
+        }
+        
+        @media (max-width: 650px) {
+            #flipbook {
+                width: 90vw;
+                height: calc(90vw * 1.5);
+            }
+            
+            #flipbook .page {
+                width: 45vw;
+                height: calc(90vw * 1.5);
+            }
+            
+            #flipbook .page-content {
+                padding: 20px;
+            }
+        }
+        
+        /* Photo frame */
+        .photo-frame {
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        /* Page number */
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            font-size: 14px;
+            color: #999;
+        }
+        
+        /* Navigation buttons */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid #ff69b4;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .nav-btn:hover {
+            background: #ff69b4;
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .nav-btn-left {
+            left: 20px;
+        }
+        
+        .nav-btn-right {
+            right: 20px;
+        }
+        
+        @media (max-width: 650px) {
+            .nav-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .nav-btn-left {
+                left: 10px;
+            }
+            
+            .nav-btn-right {
+                right: 10px;
+            }
+        }
+        
+        /* Heart decoration */
+        .heart-decoration {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 100px;
+            user-select: none;
+            pointer-events: none;
+        }
+        
+        /* Pulse animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .pulse-slow {
+            animation: pulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="animated-bg min-h-screen flex items-center justify-center py-10 overflow-x-hidden">
+    
+    <!-- Navigation Buttons -->
+    <div class="nav-btn nav-btn-left" onclick="previousPage()">
+        ◀
+    </div>
+    <div class="nav-btn nav-btn-right" onclick="nextPage()">
+        ▶
+    </div>
+    
+    <!-- Book Container -->
+    <div class="book-container">
+        <div id="flipbook">
+            
+            <!-- Portada -->
+            <div class="page" style="background: linear-gradient(135deg, #ff69b4, #ff1493);">
+                <div class="page-content text-white text-center">
+                    <h1 class="title-font text-6xl md:text-7xl font-black mb-6 drop-shadow-lg">
+                        Nuestro Libro
+                    </h1>
+                    <div class="text-8xl mb-6 pulse-slow">💕</div>
+                    <h2 class="script-font text-4xl md:text-5xl">
+                        de Amor
+                    </h2>
+                    <p class="mt-8 text-xl">
+                        Una historia de dos corazones
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Página 1 - Primera foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Nuestro familia hermosa
+                    </h3>
+                    <img src="foto1.jpeg" alt="Nuestra primera foto" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Son tan especiales para mí...
+                    </p>
+                    <div class="page-number">1</div>
+                    <div class="heart-decoration" style="top: 10px; right: 10px;">💕</div>
+                </div>
+            </div>
+            
+            <!-- Página 2 - Segunda foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Momentos Inolvidables
+                    </h3>
+                    <img src="foto2.jpeg" alt="Momentos juntos" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Cada momento a tu lado es un regalo...
+                    </p>
+                    <div class="page-number">2</div>
+                    <div class="heart-decoration" style="bottom: 10px; left: 10px;">💖</div>
+                </div>
+            </div>
+            
+            <!-- Página 3 - Tercera foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Aventuras Juntos
+                    </h3>
+                    <img src="foto7.jpeg" alt="Aventuras" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Contigo las aventuras son más bonitas...
+                    </p>
+                    <div class="page-number">3</div>
+                    <div class="heart-decoration" style="top: 10px; left: 10px;">💗</div>
+                </div>
+            </div>
+            
+            <!-- Página 4 - Cuarta foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Risas y Felicidad
+                    </h3>
+                    <img src="foto3.jpeg" alt="Momentos felices" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Tu sonrisa ilumina mi mundo...
+                    </p>
+                    <div class="page-number">4</div>
+                    <div class="heart-decoration" style="bottom: 10px; right: 10px;">💝</div>
+                </div>
+            </div>
+            
+            <!-- Página 5 - Quinta foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Amor Verdadero
+                    </h3>
+                    <img src="foto5.jpeg" alt="Amor verdadero" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Eres el amor de mi vida...
+                    </p>
+                    <div class="page-number">5</div>
+                    <div class="heart-decoration" style="top: 50%; left: 10px;">❤️</div>
+                </div>
+            </div>
+            
+            <!-- Página 6 - Sexta foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Juntos Para Siempre
+                    </h3>
+                    <img src="foto6.jpeg" alt="Juntos para siempre" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Contigo quiero estar siempre...
+                    </p>
+                    <div class="page-number">6</div>
+                    <div class="heart-decoration" style="top: 10px; right: 10px;">💞</div>
+                </div>
+            </div>
+            
+            <!-- Página 7 - Séptima foto -->
+            <div class="page">
+                <div class="page-content">
+                    <h3 class="title-font text-3xl text-pink-600 mb-4 text-center">
+                        Nuestro Amor Eterno
+                    </h3>
+                    <img src="foto4.jpeg" alt="Amor eterno" class="photo-frame mb-4">
+                    <p class="script-font text-xl text-center text-gray-700 px-4">
+                        Por siempre y para siempre...
+                    </p>
+                    <div class="page-number">7</div>
+                    <div class="heart-decoration" style="bottom: 10px; left: 10px;">💓</div>
+                </div>
+            </div>
+            
+            <!-- Página Final -->
+            <div class="page" style="background: linear-gradient(135deg, #ff1493, #ff69b4);">
+                <div class="page-content text-white text-center">
+                    <div class="text-8xl mb-6 pulse-slow">❤️</div>
+                    <h2 class="title-font text-5xl md:text-6xl font-black mb-6">
+                        Te Amo
+                    </h2>
+                    <p class="script-font text-3xl mb-6">
+                        Hoy y siempre
+                    </p>
+                    <p class="text-xl">
+                        ¡Feliz San Valentín! 💕
+                    </p>
+                    <div class="mt-8 text-9xl">
+                        💖
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg text-center">
+        <p class="text-pink-600 font-semibold">
+            ◀ Usa las flechas para pasar las páginas ▶
+        </p>
+    </div>
+    
+    <!-- Home button -->
+    <a href="index.html" class="fixed top-6 left-6 bg-white bg-opacity-90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 z-50">
+        <span class="text-pink-600 font-bold">← Volver al inicio</span>
+    </a>
+    
+    <!-- Music Control -->
+    <button id="music-control" class="fixed top-6 right-6 bg-white bg-opacity-90 backdrop-blur-md rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-2xl md:text-3xl shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 z-50">
+        🎵
+    </button>
+    
+    <!-- Audio Player -->
+    <audio id="background-music" loop autoplay>
+        <source src="cancion.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        let player = document.getElementById('background-music');
+        let musicPlaying = false;
+        
+        // Auto-play music
+        window.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('background-music');
+            audio.volume = 0.5;
+            
+            setTimeout(() => {
+                audio.play()
+                    .then(() => {
+                        musicPlaying = true;
+                        document.getElementById('music-control').textContent = '🎵';
+                    })
+                    .catch(error => {
+                        musicPlaying = false;
+                        document.getElementById('music-control').textContent = '🔇';
+                    });
+            }, 200);
+        });
+        
+        // Music control
+        document.getElementById('music-control').addEventListener('click', function() {
+            const control = this;
+            
+            if (musicPlaying) {
+                player.pause();
+                control.textContent = '🔇';
+                musicPlaying = false;
+            } else {
+                player.play().then(() => {
+                    control.textContent = '🎵';
+                    musicPlaying = true;
+                }).catch(e => console.log('Error playing music:', e));
+            }
+        });
+        
+        $(document).ready(function() {
+            // Initialize flipbook
+            $("#flipbook").turn({
+                width: 800,
+                height: 600,
+                autoCenter: true,
+                elevation: 50,
+                gradients: true,
+                duration: 1000,
+                pages: 9,
+                when: {
+                    turned: function(event, page, view) {
+                        console.log('Current page: ' + page);
+                    }
+                }
+            });
+            
+            // Responsive adjustments
+            function resizeBook() {
+                var windowWidth = $(window).width();
+                
+                if (windowWidth <= 650) {
+                    var bookWidth = windowWidth * 0.9;
+                    var bookHeight = bookWidth * 1.5;
+                    
+                    $("#flipbook").turn("size", bookWidth, bookHeight);
+                } else if (windowWidth <= 900) {
+                    $("#flipbook").turn("size", 600, 450);
+                } else {
+                    $("#flipbook").turn("size", 800, 600);
+                }
+            }
+            
+            resizeBook();
+            $(window).resize(resizeBook);
+            
+            // Keyboard navigation
+            $(document).keydown(function(e) {
+                if (e.keyCode == 37) { // Left arrow
+                    $("#flipbook").turn("previous");
+                } else if (e.keyCode == 39) { // Right arrow
+                    $("#flipbook").turn("next");
+                }
+            });
+            
+            // Animate entrance
+            anime({
+                targets: '#flipbook',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 1000,
+                easing: 'easeOutElastic(1, .5)'
+            });
+        });
+        
+        // Navigation functions
+        function previousPage() {
+            $("#flipbook").turn("previous");
+            anime({
+                targets: '.nav-btn-left',
+                scale: [1, 1.2, 1],
+                duration: 300
+            });
+        }
+        
+        function nextPage() {
+            $("#flipbook").turn("next");
+            anime({
+                targets: '.nav-btn-right',
+                scale: [1, 1.2, 1],
+                duration: 300
+            });
+        }
+        
+        // Touch swipe support for mobile
+        var touchStartX = 0;
+        var touchEndX = 0;
+        
+        document.getElementById('flipbook').addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.getElementById('flipbook').addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextPage();
+            }
+            if (touchEndX > touchStartX + 50) {
+                previousPage();
+            }
+        }
+    </script>
+</body>
+</html>

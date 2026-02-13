@@ -410,6 +410,11 @@
                     document.getElementById('music-control').textContent = '🎵';
                 }).catch(e => console.log('Error playing music:', e));
             }
+            
+            // Redirect to love book after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'libro.html';
+            }, 3000);
         });
         
         // Decline proposal (show modal instead)
